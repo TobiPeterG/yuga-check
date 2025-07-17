@@ -1,9 +1,9 @@
 [Unit]
-Description=Aeon Check Tool
+Description=Yuga Check Tool
 
 [Service]
 Type=oneshot
-ExecStart=/usr/sbin/aeon-check
+ExecStart=/usr/sbin/yuga-check
 
 [Install]
 WantedBy=default.target

@@ -8,14 +8,14 @@ set -euo pipefail
 # Setup logging
 exec 3>&1 4>&2
 trap 'exec 2>&4 1>&3' 0 1 2 3
-exec 1>>/var/log/aeon-check.log 2>&1
+exec 1>>/var/log/yuga-check.log 2>&1
 
 boo1228416() {
     # Problem: boo1228416. TPM2 using pcr hashes not pcrlock
     # Solution: Configure and enrol pcrlock for FDE
 
     # Determine root device
-    rootdev=/dev/$(dmsetup deps -o devname /dev/mapper/aeon_root | cut -d '(' -f2 | cut -d ')' -f1)
+    rootdev=/dev/$(dmsetup deps -o devname /dev/mapper/yuga_root | cut -d '(' -f2 | cut -d ')' -f1)
     # Check for failure conditions
     tpm2hashpcrs=$(cryptsetup luksDump ${rootdev} | grep 'tpm2-hash-pcrs:' | tr -d ' \t' | cut -d ':' -f2)
     tpm2pcrlock=$(cryptsetup luksDump ${rootdev} | grep 'tpm2-pcrlock:' | tr -d ' \t' | cut -d ':' -f2)
@@ -24,7 +24,7 @@ boo1228416() {
         echo "boo1228416 detected - TPM2 using pcr hashes not pcrlock - correcting"
 
         # Need a keyfile to avoid requesting the recovery key when re-enrolling
-        keyfile=$(mktemp /tmp/aeon-check.XXXXXXXXXX)
+        keyfile=$(mktemp /tmp/yuga-check.XXXXXXXXXX)
         dd bs=512 count=4 if=/dev/urandom of=${keyfile} iflag=fullblock
         chmod 400 ${keyfile}
 
@@ -64,7 +64,7 @@ boo1234234() {
 }
 
 boo1243182() {
-    # Problem: Aeon should be using Zypp's single RPM transaction backend
+    # Problem: Yuga should be using Zypp's single RPM transaction backend
     # Solution: Add 'techpreview.ZYPP_SINGLE_RPMTRANS=1' to zypp.conf 
 
     if ! grep -qxF 'techpreview.ZYPP_SINGLE_RPMTRANS=1' /etc/zypp/zypp.conf ; then
@@ -75,7 +75,7 @@ boo1243182() {
 }
 
 boo1246605() {
-    # Problem: Aeon should have 'ro=vfs' as a mount attribute for / in /etc/fstab
+    # Problem: Yuga should have 'ro=vfs' as a mount attribute for / in /etc/fstab
     # Solution: Add 'ro=vfs' as a mount attribute for / in /etc/fstab
     if gawk '$2 == "/" && $4 != "compress=zstd:1,ro=vfs"' /etc/fstab | grep -q / ; then
         echo 'boo1246605 detected - fstab not using ro=vfs for / - correcting'
@@ -89,5 +89,5 @@ boo1246605
 boo1243182
 boo1234234
 
-# Deprecated fixes likely to be dropped in future aeon-check releases
+# Deprecated fixes likely to be dropped in future Yuga-check releases
 boo1228416
